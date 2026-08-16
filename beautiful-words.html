@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beautiful Words — Aashir Rajpoot Dictionary</title>
+<meta name="description" content="Words that sound as lovely as they mean. Explore 34+ beautiful words with meanings, Roman Urdu translations and example sentences.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="top">
+  <div class="header-inner">
+    <a href="index.html" class="brand" aria-label="Aashir Rajpoot Dictionary, home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="40" height="40">
+          <defs>
+            <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--gold-bright)"/>
+              <stop offset="100%" stop-color="var(--gold)"/>
+            </linearGradient>
+            <linearGradient id="markGrad2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--turquoise)"/>
+              <stop offset="100%" stop-color="var(--violet)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="url(#markGrad)" stroke-width="1.4" opacity="0.55"/>
+          <text x="32" y="41" text-anchor="middle" font-family="DM Serif Display, serif" font-size="28" fill="url(#markGrad)">A</text>
+          <path d="M40 20 L45 34 L40 48 L36 34 Z" fill="url(#markGrad2)" opacity="0.9"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Aashir Rajpoot</span>
+        <span class="brand-sub">Dictionary</span>
+      </span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <ul>
+        <li><a href="index.html#top" class="nav-link" data-nav="top">Home</a></li>
+        <li><a href="index.html#dictionary" class="nav-link active-nav" data-nav="dictionary">Dictionary</a></li>
+        <li><a href="index.html#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
+        <li><a href="index.html#history" class="nav-link" data-nav="history">History</a></li>
+        <li><a href="index.html#about" class="nav-link" data-nav="about">About</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><g class="sun-rays"><line x1="12" y1="1.5" x2="12" y2="4.2"/><line x1="12" y1="19.8" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4.2" y2="12"/><line x1="19.8" y1="12" x2="22.5" y2="12"/><line x1="4.4" y1="4.4" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.6" y2="19.6"/><line x1="4.4" y1="19.6" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.6" y2="4.4"/></g></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </button>
+      <button id="navToggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobileNav" class="mobile-nav" aria-label="Mobile">
+    <ul>
+      <li><a href="index.html#top" class="nav-link" data-nav="top">Home</a></li>
+      <li><a href="index.html#dictionary" class="nav-link" data-nav="dictionary">Dictionary</a></li>
+      <li><a href="index.html#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
+      <li><a href="index.html#history" class="nav-link" data-nav="history">History</a></li>
+      <li><a href="index.html#about" class="nav-link" data-nav="about">About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="cat-hero" aria-labelledby="cat-heading" style="--cat-color:var(--pink)">
+    <nav class="cat-breadcrumb" aria-label="Breadcrumb">
+      <a href="index.html">Home</a>
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+      <a href="index.html#dictionary">Explore Words</a>
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+      <span>Beautiful Words</span>
+    </nav>
+    <div class="category-dot"></div>
+    <h1 id="cat-heading">Beautiful Words</h1>
+    <p class="cat-hero-sub">&ldquo;Words that sound as lovely as they mean.&rdquo;</p>
+    <p class="cat-count" id="wordCount">34 words in this collection</p>
+
+    <div class="cat-search-shell" style="--cat-color:var(--pink)">
+      <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+      <label for="catSearchInput" class="visually-hidden">Search Beautiful Words</label>
+      <input type="text" id="catSearchInput" class="cat-search-input" placeholder="Search within Beautiful Words..." autocomplete="off" spellcheck="false">
+      <button type="button" id="catSearchClear" class="cat-search-clear" aria-label="Clear search">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="cat-words-section" aria-label="Beautiful Words">
+    <div class="section-inner">
+      <div class="word-grid" id="wordGrid" style="--cat-color:var(--pink)" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="other-cats-section" aria-label="Other categories">
+    <div class="section-inner">
+      <div class="block-heading">
+        <h2>Explore Other Collections</h2>
+        <p>More curated words for every mood and mind.</p>
+      </div>
+      <div class="other-cats-grid">
+        <a class="other-cat-card" href="rare-words.html" style="--cat-color:var(--violet)"><span class="category-dot"></span><span>Rare Words</span></a>
+        <a class="other-cat-card" href="powerful-words.html" style="--cat-color:var(--crimson)"><span class="category-dot"></span><span>Powerful Words</span></a>
+        <a class="other-cat-card" href="positive-words.html" style="--cat-color:var(--emerald)"><span class="category-dot"></span><span>Positive Words</span></a>
+        <a class="other-cat-card" href="emotional-words.html" style="--cat-color:var(--coral)"><span class="category-dot"></span><span>Emotional Words</span></a>
+        <a class="other-cat-card" href="academic-words.html" style="--cat-color:var(--royal-blue)"><span class="category-dot"></span><span>Academic Words</span></a>
+        <a class="other-cat-card" href="nature-words.html" style="--cat-color:var(--teal)"><span class="category-dot"></span><span>Nature Words</span></a>
+        <a class="other-cat-card" href="advanced-words.html" style="--cat-color:var(--amber)"><span class="category-dot"></span><span>Advanced Words</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="section-inner footer-inner">
+    <div class="footer-brand">
+      <p class="footer-title">Aashir Rajpoot Dictionary</p>
+      <p class="footer-tag">Words, meanings and discoveries — beautifully connected.</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html#top">Home</a>
+      <a href="index.html#dictionary">Dictionary</a>
+      <a href="index.html#favorites">Favorites</a>
+      <a href="index.html#history">History</a>
+      <a href="index.html#about">About</a>
+    </nav>
+  </div>
+  <div class="section-inner footer-bottom">
+    <p>&copy; 2026 Aashir Rajpoot. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  window.CATEGORY_INFO = { name: "Beautiful Words", slug: "beautiful-words", color: "var(--pink)", desc: "Words that sound as lovely as they mean." };
+  window.WORDS = [
+    { word: "Serendipity", phonetic: "/ˌserənˈdɪpɪti/", meaning: "A fortunate discovery made by chance.", urdu: "Achanak kisi achi cheez ka mil jana ya khushgawar ittefaq.", example: "Finding that old photograph was a moment of serendipity." },
+    { word: "Ethereal", phonetic: "/ɪˈθɪəriəl/", meaning: "Extremely delicate and light in a way that seems too perfect for this world.", urdu: "Itni nazuk aur halki cheez jo is duniya ki na lage, jannat jaisi.", example: "The singer's ethereal voice filled the quiet hall." },
+    { word: "Mellifluous", phonetic: "/məˈlɪfluəs/", meaning: "A sound that is sweet and smooth to hear.", urdu: "Awaaz jo meethi aur sureeli ho, sunne mein pyari lage.", example: "Her mellifluous voice calmed the entire room." },
+    { word: "Euphoria", phonetic: null, meaning: "A feeling of intense happiness and excitement.", urdu: "Shadeed khushi aur josh ka ehsaas.", example: "She felt pure euphoria when she got the acceptance letter." },
+    { word: "Luminous", phonetic: "/ˈluːmɪnəs/", meaning: "Giving off light; bright and glowing.", urdu: "Roshan aur chamakta hua, jaise raat mein sitara.", example: "The luminous moon lit up the entire valley." },
+    { word: "Solace", phonetic: "/ˈsɒləs/", meaning: "Comfort in a time of distress or sadness.", urdu: "Dukh ya pareshani mein milne wala sukoon ya tasalli.", example: "She found solace in her mother's warm embrace." },
+    { word: "Ephemeral", phonetic: "/ɪˈfem(ə)rəl/", meaning: "Lasting for a very short time.", urdu: "Bohot thodi der tak rehne wali cheez, chand lamhon ki.", example: "The beauty of a sunset is ephemeral but unforgettable." },
+    { word: "Aurora", phonetic: "/ɔːˈrɔːrə/", meaning: "A natural light display in the sky, often seen near the poles.", urdu: "Aasman mein nazar aane wali khoobsurat rangeen roshni.", example: "Travelers gather in Iceland just to witness the aurora." },
+    { word: "Halcyon", phonetic: "/ˈhælsiən/", meaning: "Denoting a period of time that was idyllically happy and peaceful.", urdu: "Woh khushnuma aur pur-sukoon waqt jo bohot pyara ho.", example: "He often spoke of the halcyon days of his childhood." },
+    { word: "Lithe", phonetic: "/laɪð/", meaning: "Thin, supple, and graceful in movement.", urdu: "Patla aur naram andaz mein harkat karne wala, phurti wala.", example: "The dancer moved with a lithe, effortless grace." },
+    { word: "Opulent", phonetic: "/ˈɒpjʊlənt/", meaning: "Rich, luxurious, and grand in appearance.", urdu: "Shan-o-shaukat aur amiri se bhara hua, aalishan.", example: "The palace's opulent halls glittered with gold." },
+    { word: "Radiant", phonetic: "/ˈreɪdiənt/", meaning: "Sending out light; glowing brightly, often with happiness.", urdu: "Chamakta hua, khushi se damakta hua chehra ya roshni.", example: "The bride looked radiant in her white gown." },
+    { word: "Effervescent", phonetic: "/ˌefəˈvesnt/", meaning: "Vivacious, bubbly, and full of enthusiasm.", urdu: "Zindadili aur josh se bhara hua, khush-mizaj.", example: "Her effervescent personality made everyone smile." },
+    { word: "Iridescent", phonetic: "/ˌɪrɪˈdesnt/", meaning: "Showing luminous colors that seem to change when viewed from different angles.", urdu: "Rang jo dekhne ke zaviye se badalte hue chamken, jaise sabun ka bulbula.", example: "Soap bubbles floated by, iridescent in the sunlight." },
+    { word: "Whimsical", phonetic: "/ˈwɪmzɪkəl/", meaning: "Playfully quaint or fanciful, especially in an appealing way.", urdu: "Mazahiya aur anokhे andaz mein pyara, khayali sa.", example: "The garden was full of whimsical little sculptures." },
+    { word: "Enchanting", phonetic: "/ɪnˈtʃɑːntɪŋ/", meaning: "Delightfully charming or attractive; almost magical.", urdu: "Dilfareb aur jadu jaisa pur-kashish, dil moh lene wala.", example: "The old town had an enchanting, storybook charm." },
+    { word: "Sublime", phonetic: "/səˈblaɪm/", meaning: "Of such excellence or beauty as to inspire awe.", urdu: "Itna khoobsurat ya azeem ke dekh kar hairat ho.", example: "The view from the mountain peak was simply sublime." },
+    { word: "Resplendent", phonetic: "/rɪˈsplendənt/", meaning: "Attractive and impressive through being richly colorful or shining.", urdu: "Chamakdar aur shandar andaz mein khoobsurat, jagmagata hua.", example: "The temple stood resplendent under the evening sun." },
+    { word: "Serene", phonetic: "/səˈriːn/", meaning: "Calm, peaceful, and untroubled.", urdu: "Pur-sukoon aur pur-amn, koi pareshani na ho.", example: "The lake was serene at dawn, without a single ripple." },
+    { word: "Elysian", phonetic: "/ɪˈlɪziən/", meaning: "Beautiful or blissful; relating to paradise.", urdu: "Jannat jaisi khoobsurat aur pur-sukoon halat.", example: "They spent an elysian afternoon by the river." },
+    { word: "Diaphanous", phonetic: "/daɪˈæfənəs/", meaning: "Light, delicate, and translucent in a graceful way.", urdu: "Bareek aur shafaaf kapra ya cheez jis se roshni chhan kar aaye.", example: "The curtains were diaphanous, letting soft light drift in." },
+    { word: "Gossamer", phonetic: "/ˈɡɒsəmə/", meaning: "Something very light, thin, and delicate.", urdu: "Bohot halki aur bareek cheez, jaise makri ka jaala.", example: "A gossamer mist hung over the morning fields." },
+    { word: "Cascading", phonetic: "/kæˈskeɪdɪŋ/", meaning: "Falling or pouring down in stages, like a waterfall.", urdu: "Jharne ki tarah tehleharkar neeche girna.", example: "Her hair fell in cascading waves over her shoulders." },
+    { word: "Beguiling", phonetic: "/bɪˈɡaɪlɪŋ/", meaning: "Charming or attractive in a deceptive or mysterious way.", urdu: "Pur-kashish andaz mein dil lubhane wala, thoda pur-israr.", example: "There was something beguiling about the old bookshop." },
+    { word: "Pristine", phonetic: "/ˈprɪstiːn/", meaning: "In its original, spotless, and unspoiled condition.", urdu: "Bilkul saaf aur bina kharab hue, apni asli halat mein.", example: "The beach remained pristine, untouched by tourists." },
+    { word: "Tranquil", phonetic: "/ˈtræŋkwɪl/", meaning: "Free from disturbance; calm and peaceful.", urdu: "Khamosh aur pur-sukoon, koi shor ya pareshani nahi.", example: "A tranquil silence settled over the valley at dusk." },
+    { word: "Velvety", phonetic: "/ˈvelvɪti/", meaning: "Smooth and soft like velvet.", urdu: "Bohot narm aur mulayam, makhmal jaisa.", example: "The velvety petals of the rose felt soft to touch." },
+    { word: "Glisten", phonetic: "/ˈɡlɪsn/", meaning: "To shine with a sparkling light, especially when wet.", urdu: "Chamakna, khaas taur par gilay hone par jagmagana.", example: "Dew drops glistened on the morning grass." },
+    { word: "Bucolic", phonetic: "/bjuːˈkɒlɪk/", meaning: "Relating to pleasant, peaceful aspects of the countryside.", urdu: "Dehaati aur khoobsurat manzar wala, sukoon bhara.", example: "They dreamed of a bucolic life away from the city." },
+    { word: "Effulgent", phonetic: "/ɪˈfʌldʒənt/", meaning: "Shining brightly; radiant.", urdu: "Bohot roshan aur chamakta hua.", example: "The effulgent sunrise painted the sky gold." },
+    { word: "Petrichor", phonetic: "/ˈpetrɪkɔː/", meaning: "The pleasant smell of earth after rain.", urdu: "Baarish ke baad mitti se aane wali pyari khushbu.", example: "She loved the petrichor that rose from the garden after rain." },
+    { word: "Cerulean", phonetic: "/səˈruːliən/", meaning: "A deep sky-blue color.", urdu: "Gehra aasmani neela rang.", example: "The cerulean sky stretched endlessly above the sea." },
+    { word: "Blissful", phonetic: "/ˈblɪsfʊl/", meaning: "Extremely happy; full of joy.", urdu: "Nihayat khush aur mutmaeen, sukoon bhari khushi.", example: "They spent a blissful evening watching the stars." },
+    { word: "Enraptured", phonetic: "/ɪnˈræptʃəd/", meaning: "Filled with great pleasure and delight.", urdu: "Khushi aur kaif se itna bhar jana ke hosh na rahe.", example: "The audience sat enraptured through the entire performance." }
+  ];
+</script>
+<script src="category-page.js"></script>
+</body>
+</html>

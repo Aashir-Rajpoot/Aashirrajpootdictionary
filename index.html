@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aashir Rajpoot Dictionary — Words Have Worlds</title>
+<meta name="description" content="Explore meanings, pronunciations, examples and more — beautifully organized in one intelligent dictionary.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="top">
+  <div class="header-inner">
+    <a href="#top" class="brand" aria-label="Aashir Rajpoot Dictionary, home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="40" height="40">
+          <defs>
+            <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--gold-bright)"/>
+              <stop offset="100%" stop-color="var(--gold)"/>
+            </linearGradient>
+            <linearGradient id="markGrad2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--turquoise)"/>
+              <stop offset="100%" stop-color="var(--violet)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="url(#markGrad)" stroke-width="1.4" opacity="0.55"/>
+          <text x="32" y="41" text-anchor="middle" font-family="DM Serif Display, serif" font-size="28" fill="url(#markGrad)">A</text>
+          <path d="M40 20 L45 34 L40 48 L36 34 Z" fill="url(#markGrad2)" opacity="0.9"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Aashir Rajpoot</span>
+        <span class="brand-sub">Dictionary</span>
+      </span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <ul>
+        <li><a href="#top" class="nav-link active-nav" data-nav="top">Home</a></li>
+        <li><a href="#dictionary" class="nav-link" data-nav="dictionary">Dictionary</a></li>
+        <li><a href="#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
+        <li><a href="#history" class="nav-link" data-nav="history">History</a></li>
+        <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><g class="sun-rays"><line x1="12" y1="1.5" x2="12" y2="4.2"/><line x1="12" y1="19.8" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4.2" y2="12"/><line x1="19.8" y1="12" x2="22.5" y2="12"/><line x1="4.4" y1="4.4" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.6" y2="19.6"/><line x1="4.4" y1="19.6" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.6" y2="4.4"/></g></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </button>
+      <button id="navToggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobileNav" class="mobile-nav" aria-label="Mobile">
+    <ul>
+      <li><a href="#top" class="nav-link" data-nav="top">Home</a></li>
+      <li><a href="#dictionary" class="nav-link" data-nav="dictionary">Dictionary</a></li>
+      <li><a href="#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
+      <li><a href="#history" class="nav-link" data-nav="history">History</a></li>
+      <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="hero" aria-labelledby="hero-heading">
+    <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>An intelligent dictionary, beautifully organized</p>
+    <h1 id="hero-heading">Words Have Worlds.<br><span class="hero-highlight">Discover Them.</span></h1>
+    <p class="hero-sub">Explore meanings, pronunciations, examples and more — beautifully organized in one intelligent dictionary.</p>
+
+    <form class="search-shell" id="searchForm" role="search" aria-label="Search the dictionary">
+      <label for="searchInput" class="visually-hidden">Search any word</label>
+      <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+      <input type="text" id="searchInput" placeholder="Search any word..." autocomplete="off" spellcheck="false" aria-describedby="searchHint">
+      <button type="submit" class="btn-search">
+        <span>Search</span>
+      </button>
+    </form>
+    <span id="searchHint" class="visually-hidden">Press enter to search, or choose a popular word below</span>
+
+    <div class="chip-row" aria-label="Popular words">
+      <span class="chip-label">Popular:</span>
+      <button class="chip" type="button" data-word="serendipity">Serendipity</button>
+      <button class="chip" type="button" data-word="ephemeral">Ephemeral</button>
+      <button class="chip" type="button" data-word="resilience">Resilience</button>
+      <button class="chip" type="button" data-word="euphoria">Euphoria</button>
+      <button class="chip" type="button" data-word="wanderlust">Wanderlust</button>
+    </div>
+  </section>
+
+  <section class="dictionary-section" id="dictionary" aria-label="Dictionary results">
+    <div class="section-inner">
+
+      <div id="resultArea" aria-live="polite">
+        <div id="wordOfDay" class="wotd-card">
+          <div class="wotd-label">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2l2.4 6.5L21 11l-6.6 2.5L12 20l-2.4-6.5L3 11l6.6-2.5Z"/></svg>
+            Word of the Day
+          </div>
+          <div class="wotd-body">
+            <div class="wotd-main">
+              <h2 id="wotdWord">—</h2>
+              <div class="wotd-phon-row">
+                <span id="wotdPhon" class="phonetic">—</span>
+                <button class="btn-speak small" id="wotdSpeak" type="button" aria-label="Pronounce word of the day">
+                  <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" class="wave"/><path d="M19 6a9 9 0 0 1 0 12" class="wave"/></svg>
+                </button>
+              </div>
+              <p class="wotd-pos" id="wotdPos">—</p>
+              <p class="wotd-meaning" id="wotdMeaning">Loading today's word…</p>
+              <p class="wotd-example" id="wotdExample"></p>
+            </div>
+            <button class="btn-primary" id="wotdExplore" type="button">Explore Word</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="categories-block">
+        <div class="block-heading">
+          <h2>Explore Words</h2>
+          <p>Curated collections for every mood and mind.</p>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </div>
+
+      <div class="stats-block" id="statsBlock" aria-label="Your dictionary activity">
+        <div class="stat">
+          <span class="stat-num" id="statSearches">0</span>
+          <span class="stat-label">Words Searched</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statFavorites">0</span>
+          <span class="stat-label">Favorites</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statHistory">0</span>
+          <span class="stat-label">History Items</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statAvailable">170000</span>
+          <span class="stat-label">Words Available</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="favorites-section" id="favorites" aria-label="Favorite words">
+    <div class="section-inner">
+      <div class="block-heading">
+        <h2>Favorites</h2>
+        <p>Words you've chosen to keep close.</p>
+      </div>
+      <div id="favoritesList" class="favorites-grid"></div>
+    </div>
+  </section>
+
+  <section class="history-section" id="history" aria-label="Search history">
+    <div class="section-inner">
+      <div class="block-heading history-heading">
+        <div>
+          <h2>Recent Searches</h2>
+          <p>Your last 20 lookups, saved to this device.</p>
+        </div>
+        <button class="btn-ghost" id="clearHistory" type="button">Clear All</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </section>
+
+  <section class="about-section" id="about" aria-label="About">
+    <div class="section-inner about-inner">
+      <div class="about-text">
+        <div class="block-heading">
+          <h2>About</h2>
+        </div>
+        <p><strong>Aashir Rajpoot Dictionary</strong> is a modern digital dictionary designed to make discovering words simple, beautiful and enjoyable. It brings definitions, pronunciations, examples and related words together in one calm, considered place.</p>
+      </div>
+      <div class="creator-card">
+        <div class="creator-avatar" aria-hidden="true">AR</div>
+        <div>
+          <p class="creator-label">Created by</p>
+          <p class="creator-name">Aashir Rajpoot</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="section-inner footer-inner">
+    <div class="footer-brand">
+      <p class="footer-title">Aashir Rajpoot Dictionary</p>
+      <p class="footer-tag">Words, meanings and discoveries — beautifully connected.</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="#top">Home</a>
+      <a href="#dictionary">Dictionary</a>
+      <a href="#favorites">Favorites</a>
+      <a href="#history">History</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+  <div class="section-inner footer-bottom">
+    <p>© 2026 Aashir Rajpoot. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
