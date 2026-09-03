@@ -153,7 +153,7 @@
     letter = (letter || '').toLowerCase();
     if (!ALPHABET.includes(letter)) return Promise.resolve([]);
     if (letterCache[letter]) return letterCache[letter];
-    letterCache[letter] = fetch(`data/words-${letter}.json`)
+    letterCache[letter] = fetch(`words-${letter}.json`)
       .then(res => { if (!res.ok) throw new Error('chunk-load-failed'); return res.json(); })
       .catch(() => []);
     return letterCache[letter];
@@ -162,9 +162,9 @@
   async function loadCoreData() {
     try {
       const [meta, adult, places] = await Promise.all([
-        fetch('data/words-meta.json').then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch('data/adult-words.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
-        fetch('data/places.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+        fetch('words-meta.json').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('adult-words.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+        fetch('places.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
       ]);
       wordsMeta = meta;
       ADULT_WORDS = adult || {};
