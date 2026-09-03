@@ -52,6 +52,7 @@
       <ul>
         <li><a href="#top" class="nav-link active-nav" data-nav="top">Home</a></li>
         <li><a href="#dictionary" class="nav-link" data-nav="dictionary">Dictionary</a></li>
+        <li><a href="#az-browse" class="nav-link" data-nav="az-browse">Browse A–Z</a></li>
         <li><a href="#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
         <li><a href="#history" class="nav-link" data-nav="history">History</a></li>
         <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
@@ -73,6 +74,7 @@
     <ul>
       <li><a href="#top" class="nav-link" data-nav="top">Home</a></li>
       <li><a href="#dictionary" class="nav-link" data-nav="dictionary">Dictionary</a></li>
+      <li><a href="#az-browse" class="nav-link" data-nav="az-browse">Browse A–Z</a></li>
       <li><a href="#favorites" class="nav-link" data-nav="favorites">Favorites</a></li>
       <li><a href="#history" class="nav-link" data-nav="history">History</a></li>
       <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
@@ -87,14 +89,17 @@
     <h1 id="hero-heading">Words Have Worlds.<br><span class="hero-highlight">Discover Them.</span></h1>
     <p class="hero-sub">Explore meanings, pronunciations, examples and more — beautifully organized in one intelligent dictionary.</p>
 
-    <form class="search-shell" id="searchForm" role="search" aria-label="Search the dictionary">
-      <label for="searchInput" class="visually-hidden">Search any word</label>
-      <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
-      <input type="text" id="searchInput" placeholder="Search any word..." autocomplete="off" spellcheck="false" aria-describedby="searchHint">
-      <button type="submit" class="btn-search">
-        <span>Search</span>
-      </button>
-    </form>
+    <div class="search-wrap">
+      <form class="search-shell" id="searchForm" role="search" aria-label="Search the dictionary">
+        <label for="searchInput" class="visually-hidden">Search any word</label>
+        <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+        <input type="text" id="searchInput" placeholder="Search any word..." autocomplete="off" spellcheck="false" aria-describedby="searchHint" role="combobox" aria-expanded="false" aria-controls="searchAutocomplete">
+        <button type="submit" class="btn-search">
+          <span>Search</span>
+        </button>
+      </form>
+      <div id="searchAutocomplete" class="autocomplete-panel" hidden></div>
+    </div>
     <span id="searchHint" class="visually-hidden">Press enter to search, or choose a popular word below</span>
 
     <div class="chip-row" aria-label="Popular words">
@@ -156,11 +161,24 @@
           <span class="stat-label">History Items</span>
         </div>
         <div class="stat">
-          <span class="stat-num" id="statAvailable">170000</span>
-          <span class="stat-label">Words Available</span>
+          <span class="stat-num" id="statAvailable">…</span>
+          <span class="stat-label">Words in A–Z Index</span>
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <section class="az-browse-section" id="az-browse" aria-label="Browse the dictionary A to Z">
+    <div class="section-inner">
+      <div class="block-heading">
+        <h2>Browse A–Z</h2>
+        <p>A real, validated English vocabulary index — every letter, thousands of words. Pick a letter to explore.</p>
+      </div>
+      <div class="az-letter-row" id="azLetterRow" role="tablist" aria-label="Alphabet"></div>
+      <p class="az-heading" id="azHeading">Loading…</p>
+      <div class="az-word-grid" id="azWordGrid" aria-live="polite"></div>
+      <button type="button" class="btn-ghost az-show-more" id="azShowMore" hidden>Show more words</button>
     </div>
   </section>
 
@@ -216,6 +234,7 @@
     <nav class="footer-nav" aria-label="Footer">
       <a href="#top">Home</a>
       <a href="#dictionary">Dictionary</a>
+      <a href="#az-browse">Browse A–Z</a>
       <a href="#favorites">Favorites</a>
       <a href="#history">History</a>
       <a href="#about">About</a>
@@ -227,6 +246,20 @@
 </footer>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="ageGateModal" class="age-gate-modal" hidden role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
+  <div class="age-gate-card">
+    <svg class="age-gate-icon" viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>
+    <h3 id="ageGateTitle">This entry contains mature content</h3>
+    <p>This dictionary entry is marked as mature or adult vocabulary. Please confirm you are 18 years of age or older to continue.</p>
+    <p id="ageGateWord" class="visually-hidden"></p>
+    <p class="age-gate-fine-print">This is a simple self-reported check, not verified age or identity verification.</p>
+    <div class="age-gate-actions">
+      <button type="button" class="btn-ghost" id="ageGateNo">No, take me back</button>
+      <button type="button" class="btn-primary" id="ageGateYes">Yes, I'm 18 or older</button>
+    </div>
+  </div>
+</div>
 
 <script src="script.js"></script>
 </body>
