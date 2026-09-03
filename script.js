@@ -209,7 +209,7 @@
     posEl.textContent = '';
     exampleEl.textContent = '';
 
-    let data = await fetchDefinition(word).catch(() => null);
+    let data = await fetchDefinitionWithFallback(word).then(r => r.data).catch(() => null);
     if (data && data.length) {
       const entry = data[0];
       const meaning = entry.meanings && entry.meanings[0];
@@ -377,6 +377,62 @@
       throw err;
     }
   }
+
+  /* ---------------- SECONDARY LIVE SOURCE (Datamuse) ----------------
+     Used only when the primary dictionaryapi.dev source fails or times out
+     (that free service has occasional outages). Datamuse is a separate,
+     independently-hosted, no-key, CORS-friendly API backed by WordNet —
+     real definitions, not fabricated. */
+  const POS_MAP = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', u: 'other' };
+
+  async function fetchFromDatamuse(word) {
+    const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word.trim().toLowerCase())}&md=d&max=1`);
+    if (!res.ok) throw new Error('datamuse-error');
+    const data = await res.json();
+    const entry = data && data[0];
+    if (!entry || !entry.defs || !entry.defs.length) {
+      const err = new Error('not-found');
+      err.notFound = true;
+      throw err;
+    }
+    const byPos = {};
+    entry.defs.forEach((raw) => {
+      const [abbr, ...rest] = raw.split('\t');
+      const pos = POS_MAP[abbr] || 'other';
+      const def = rest.join('\t');
+      if (!byPos[pos]) byPos[pos] = [];
+      byPos[pos].push(def);
+    });
+    return [{
+      word: entry.word,
+      phonetic: '',
+      meanings: Object.keys(byPos).map(pos => ({
+        partOfSpeech: pos,
+        definitions: byPos[pos].map(def => ({ definition: def })),
+        synonyms: [],
+        antonyms: []
+      }))
+    }];
+  }
+
+  // Tries the primary source, then the secondary source, before giving up.
+  async function fetchDefinitionWithFallback(word) {
+    try {
+      return { data: await fetchDefinition(word), source: 'Live Dictionary' };
+    } catch (primaryErr) {
+      try {
+        return { data: await fetchFromDatamuse(word), source: 'Live Dictionary (backup source)' };
+      } catch (secondaryErr) {
+        // Prefer surfacing "not found" only if BOTH sources agree the word doesn't exist;
+        // otherwise treat it as a service problem so offline/places fallback still gets tried.
+        if (primaryErr && primaryErr.notFound && secondaryErr && secondaryErr.notFound) {
+          throw primaryErr;
+        }
+        throw (primaryErr && !primaryErr.notFound) ? primaryErr : secondaryErr;
+      }
+    }
+  }
+
 
   /* ---------------- AGE GATE (18+ / MATURE WORDS) ---------------- */
   function isAdultWord(word) {
@@ -696,9 +752,9 @@
     addToHistory(word);
 
     try {
-      const data = await fetchDefinition(word);
+      const { data, source } = await fetchDefinitionWithFallback(word);
       if (myToken !== searchToken) return;
-      const category = isAdultWord(lower) ? (ADULT_WORDS[lower].category || 'Mature Content') : 'Live Dictionary';
+      const category = isAdultWord(lower) ? (ADULT_WORDS[lower].category || 'Mature Content') : source;
       renderResult(word, data, category);
     } catch (err) {
       if (myToken !== searchToken) return;
