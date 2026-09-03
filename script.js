@@ -11,6 +11,10 @@
     searchCount: 'ar_dict_search_count'
   };
 
+  const SESSION_KEYS = {
+    adultConfirmed: 'ar_dict_adult_confirmed'
+  };
+
   const storage = {
     get(key, fallback) {
       try {
@@ -30,6 +34,15 @@
     }
   };
 
+  const session = {
+    get(key) {
+      try { return sessionStorage.getItem(key); } catch (e) { return null; }
+    },
+    set(key, value) {
+      try { sessionStorage.setItem(key, value); return true; } catch (e) { return false; }
+    }
+  };
+
   const $ = (sel) => document.querySelector(sel);
   const themeToggle = $('#themeToggle');
   const navToggle = $('#navToggle');
@@ -42,6 +55,15 @@
   const historyList = $('#historyList');
   const clearHistoryBtn = $('#clearHistory');
   const toastEl = $('#toast');
+  const autocompleteEl = $('#searchAutocomplete');
+  const ageGateModal = $('#ageGateModal');
+  const ageGateWord = $('#ageGateWord');
+  const ageGateYes = $('#ageGateYes');
+  const ageGateNo = $('#ageGateNo');
+  const azLetterRow = $('#azLetterRow');
+  const azWordGrid = $('#azWordGrid');
+  const azHeading = $('#azHeading');
+  const azShowMoreBtn = $('#azShowMore');
 
   /* ---------------- THEME ---------------- */
   function initTheme() {
@@ -92,7 +114,7 @@
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
   }
 
-  /* ---------------- CURATED WORD DATA ---------------- */
+  /* ---------------- CURATED OFFLINE WORD DATA (used when the live API is unreachable) ---------------- */
   const OFFLINE_WORDS = {
     serendipity: { phonetic: '/ˌserənˈdɪpɪti/', pos: 'noun', meaning: 'The occurrence of events by chance in a happy or beneficial way.', example: 'A fortunate stroke of serendipity brought them together.', synonyms: ['chance', 'fortune', 'luck', 'fluke'], antonyms: ['misfortune'] },
     ephemeral: { phonetic: '/ɪˈfem(ə)rəl/', pos: 'adjective', meaning: 'Lasting for a very short time.', example: 'The beauty of cherry blossoms is ephemeral.', synonyms: ['fleeting', 'transient', 'momentary'], antonyms: ['permanent', 'lasting'] },
@@ -118,6 +140,53 @@
     { name: 'Nature Words', color: 'var(--teal)', desc: 'Words borrowed from the wild.', words: ['wanderlust', 'meadow', 'zephyr', 'horizon', 'ember'], page: 'nature-words.html' },
     { name: 'Advanced Words', color: 'var(--amber)', desc: 'Words that expand your vocabulary.', words: ['equanimity', 'perspicacious', 'ineffable', 'quintessential', 'ephemeral'], page: 'advanced-words.html' }
   ];
+
+  /* ---------------- LARGE A–Z VOCABULARY INDEX (lazy-loaded per letter) ---------------- */
+  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const letterCache = {};      // letter -> Promise<string[]>
+  let wordsMeta = null;        // { counts, total, source }
+  let ADULT_WORDS = {};        // lowercase word -> curated adult entry
+  let PLACES = {};             // lowercase name -> curated place entry
+  let dataReady = false;
+
+  function loadLetter(letter) {
+    letter = (letter || '').toLowerCase();
+    if (!ALPHABET.includes(letter)) return Promise.resolve([]);
+    if (letterCache[letter]) return letterCache[letter];
+    letterCache[letter] = fetch(`data/words-${letter}.json`)
+      .then(res => { if (!res.ok) throw new Error('chunk-load-failed'); return res.json(); })
+      .catch(() => []);
+    return letterCache[letter];
+  }
+
+  async function loadCoreData() {
+    try {
+      const [meta, adult, places] = await Promise.all([
+        fetch('data/words-meta.json').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('data/adult-words.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+        fetch('data/places.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+      ]);
+      wordsMeta = meta;
+      ADULT_WORDS = adult || {};
+      PLACES = places || {};
+    } catch (e) {
+      wordsMeta = null;
+      ADULT_WORDS = {};
+      PLACES = {};
+    }
+    dataReady = true;
+    updateAvailableStat();
+  }
+
+  function updateAvailableStat() {
+    const statEl = $('#statAvailable');
+    if (!statEl) return;
+    const total = wordsMeta && wordsMeta.total ? wordsMeta.total : null;
+    if (total) {
+      statEl.textContent = total.toLocaleString();
+      statEl.setAttribute('title', 'Real English words indexed across A–Z, sourced from a validated frequency wordlist.');
+    }
+  }
 
   /* ---------------- WORD OF THE DAY ---------------- */
   function getWordOfDay() {
@@ -157,8 +226,10 @@
       exampleEl.textContent = `"${offline.example}"`;
     }
 
-    $('#wotdSpeak').onclick = () => speakWord(word, $('#wotdSpeak'));
-    $('#wotdExplore').onclick = () => runSearch(word);
+    const speakBtn = $('#wotdSpeak');
+    const exploreBtn = $('#wotdExplore');
+    if (speakBtn) speakBtn.onclick = () => speakWord(word, speakBtn);
+    if (exploreBtn) exploreBtn.onclick = () => runSearch(word);
   }
 
   /* ---------------- CATEGORIES ---------------- */
@@ -185,6 +256,78 @@
     });
   }
 
+  /* ---------------- A–Z BROWSING ---------------- */
+  const AZ_PAGE_SIZE = 120;
+  let azCurrentLetter = 'a';
+  let azCurrentWords = [];
+  let azShown = 0;
+
+  function renderAzLetters() {
+    if (!azLetterRow) return;
+    azLetterRow.innerHTML = ALPHABET.map(l => `
+      <button type="button" class="az-letter-btn" data-letter="${l}" aria-pressed="false">${l.toUpperCase()}</button>
+    `).join('');
+    azLetterRow.querySelectorAll('.az-letter-btn').forEach(btn => {
+      btn.addEventListener('click', () => openAzLetter(btn.dataset.letter));
+    });
+  }
+
+  async function openAzLetter(letter) {
+    azCurrentLetter = letter;
+    azShown = 0;
+    if (azLetterRow) {
+      azLetterRow.querySelectorAll('.az-letter-btn').forEach(b => {
+        const active = b.dataset.letter === letter;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
+    }
+    if (azWordGrid) {
+      azWordGrid.innerHTML = `<p class="az-loading">Loading “${letter.toUpperCase()}” words…</p>`;
+    }
+    const words = await loadLetter(letter);
+    azCurrentWords = words;
+    if (azHeading) {
+      azHeading.textContent = words.length
+        ? `${words.length.toLocaleString()} words starting with "${letter.toUpperCase()}"`
+        : `No indexed words for "${letter.toUpperCase()}" yet`;
+    }
+    renderAzGrid();
+  }
+
+  function renderAzGrid() {
+    if (!azWordGrid) return;
+    const nextCount = Math.min(azShown + AZ_PAGE_SIZE, azCurrentWords.length);
+    const slice = azCurrentWords.slice(0, nextCount);
+    azShown = nextCount;
+
+    if (!slice.length) {
+      azWordGrid.innerHTML = `<p class="az-loading">No words found for this letter.</p>`;
+      if (azShowMoreBtn) azShowMoreBtn.hidden = true;
+      return;
+    }
+
+    azWordGrid.innerHTML = slice.map(w => {
+      const adult = isAdultWord(w);
+      return `<button type="button" class="az-word-chip${adult ? ' adult' : ''}" data-word="${escapeHtml(w)}">${escapeHtml(w)}${adult ? '<span class="adult-badge">18+</span>' : ''}</button>`;
+    }).join('');
+
+    azWordGrid.querySelectorAll('.az-word-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        runSearch(btn.dataset.word);
+        document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    if (azShowMoreBtn) {
+      azShowMoreBtn.hidden = azShown >= azCurrentWords.length;
+    }
+  }
+
+  if (azShowMoreBtn) {
+    azShowMoreBtn.addEventListener('click', renderAzGrid);
+  }
+
   /* ---------------- SPEECH SYNTHESIS ---------------- */
   function speakWord(word, btn) {
     if (!('speechSynthesis' in window)) {
@@ -200,18 +343,111 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  /* ---------------- API FETCH ---------------- */
-  async function fetchDefinition(word) {
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`);
-    if (!res.ok) {
-      if (res.status === 404) {
-        const err = new Error('not-found');
-        err.notFound = true;
-        throw err;
+  /* ---------------- INPUT NORMALIZATION ---------------- */
+  // Trims whitespace, collapses internal whitespace, and strips leading/trailing
+  // punctuation while preserving internal characters like hyphens and apostrophes
+  // (e.g. "mother-in-law", "don't") so real words aren't mangled.
+  function normalizeQuery(raw) {
+    if (!raw) return '';
+    let w = String(raw).replace(/\s+/g, ' ').trim();
+    w = w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+    return w;
+  }
+
+  /* ---------------- API FETCH (with one retry on transient failure) ---------------- */
+  async function fetchDefinition(word, attempt) {
+    attempt = attempt || 0;
+    try {
+      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`);
+      if (!res.ok) {
+        if (res.status === 404) {
+          const err = new Error('not-found');
+          err.notFound = true;
+          throw err;
+        }
+        throw new Error('api-error');
       }
-      throw new Error('api-error');
+      return await res.json();
+    } catch (err) {
+      if (err && err.notFound) throw err;
+      if (attempt < 1) {
+        await new Promise(r => setTimeout(r, 400));
+        return fetchDefinition(word, attempt + 1);
+      }
+      throw err;
     }
-    return res.json();
+  }
+
+  /* ---------------- AGE GATE (18+ / MATURE WORDS) ---------------- */
+  function isAdultWord(word) {
+    return !!(word && Object.prototype.hasOwnProperty.call(ADULT_WORDS, word.toLowerCase()));
+  }
+
+  function isAdultSessionConfirmed() {
+    return session.get(SESSION_KEYS.adultConfirmed) === '1';
+  }
+
+  let pendingAdultWord = null;
+  let pendingAdultOrigin = null;
+
+  function showAgeGate(word, origin) {
+    pendingAdultWord = word;
+    pendingAdultOrigin = origin || null;
+    if (ageGateWord) ageGateWord.textContent = '';
+    if (ageGateModal) {
+      ageGateModal.hidden = false;
+      document.body.classList.add('modal-open');
+      requestAnimationFrame(() => ageGateModal.classList.add('show'));
+      if (ageGateYes) ageGateYes.focus();
+    }
+  }
+
+  function hideAgeGate() {
+    if (!ageGateModal) return;
+    ageGateModal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    setTimeout(() => { ageGateModal.hidden = true; }, 200);
+  }
+
+  if (ageGateYes) {
+    ageGateYes.addEventListener('click', () => {
+      session.set(SESSION_KEYS.adultConfirmed, '1');
+      const word = pendingAdultWord;
+      hideAgeGate();
+      pendingAdultWord = null;
+      if (word) runSearch(word);
+    });
+  }
+  if (ageGateNo) {
+    ageGateNo.addEventListener('click', () => {
+      hideAgeGate();
+      pendingAdultWord = null;
+      renderAdultDeclined();
+    });
+  }
+  if (ageGateModal) {
+    ageGateModal.addEventListener('click', (e) => {
+      if (e.target === ageGateModal) {
+        hideAgeGate();
+        pendingAdultWord = null;
+      }
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && ageGateModal && !ageGateModal.hidden) {
+      hideAgeGate();
+      pendingAdultWord = null;
+    }
+  });
+
+  function renderAdultDeclined() {
+    resultArea.innerHTML = `
+      <div class="state-card">
+        <svg class="state-icon" viewBox="0 0 24 24" width="40" height="40"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>
+        <h3>That entry is age-restricted.</h3>
+        <p>No problem — search for another word, or explore one of the curated collections below.</p>
+      </div>
+    `;
   }
 
   /* ---------------- STATE RENDERS ---------------- */
@@ -225,14 +461,32 @@
     `;
   }
 
-  function renderNotFound(word) {
+  async function renderNotFound(word) {
+    let suggestionsHtml = '';
+    const first = word[0] ? word[0].toLowerCase() : '';
+    if (ALPHABET.includes(first)) {
+      const list = await loadLetter(first);
+      const suggestions = suggestClosestWords(word.toLowerCase(), list, 5);
+      if (suggestions.length) {
+        suggestionsHtml = `
+          <div class="notfound-suggestions">
+            <p class="word-section-title">Did you mean</p>
+            <div class="tag-row">${suggestions.map(s => `<button type="button" class="tag" data-word="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')}</div>
+          </div>
+        `;
+      }
+    }
     resultArea.innerHTML = `
       <div class="state-card">
         <svg class="state-icon" viewBox="0 0 24 24" width="40" height="40"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/><line x1="8" y1="8" x2="14" y2="14"/><line x1="14" y1="8" x2="8" y2="14"/></svg>
         <h3>Couldn't find that word.</h3>
-        <p>Check the spelling or try another word.</p>
+        <p>Check the spelling, try another word, or browse the A–Z index below.</p>
+        ${suggestionsHtml}
       </div>
     `;
+    resultArea.querySelectorAll('.tag[data-word]').forEach(tag => {
+      tag.addEventListener('click', () => runSearch(tag.dataset.word));
+    });
   }
 
   function renderApiError(word) {
@@ -243,6 +497,39 @@
         <p>Please try again in a moment. Your favorites, history and categories still work offline.</p>
       </div>
     `;
+  }
+
+  // Cheap bounded Levenshtein distance (only cares whether distance <= 2).
+  function editDistanceWithin(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    const m = a.length, n = b.length;
+    let prev = new Array(n + 1);
+    for (let j = 0; j <= n; j++) prev[j] = j;
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      let rowMin = cur[0];
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        rowMin = Math.min(rowMin, cur[j]);
+      }
+      if (rowMin > max) return max + 1;
+      prev = cur;
+    }
+    return prev[n];
+  }
+
+  function suggestClosestWords(word, list, limit) {
+    if (!word || !list || !list.length) return [];
+    const starts = list.filter(w => w !== word && w.startsWith(word)).slice(0, limit);
+    if (starts.length >= limit) return starts;
+    const near = [];
+    for (const w of list) {
+      if (w === word || starts.includes(w)) continue;
+      if (editDistanceWithin(word, w, 2) <= 2) near.push(w);
+      if (near.length >= limit * 3) break;
+    }
+    return starts.concat(near).slice(0, limit);
   }
 
   function escapeHtml(str) {
@@ -257,7 +544,12 @@
     return map[pos] || 'pos-other';
   }
 
-  function renderResult(word, apiData) {
+  function categoryBadgeHtml(category) {
+    if (!category) return '';
+    return `<span class="source-badge">${escapeHtml(category)}</span>`;
+  }
+
+  function renderResult(word, apiData, category) {
     const entry = apiData[0];
     const phonetic = entry.phonetic || ((entry.phonetics || []).find(p => p.text) || {}).text || '';
     const isFav = isFavorite(word);
@@ -308,6 +600,7 @@
         <div class="result-top">
           <div class="result-word-block">
             <h2 class="result-word">${escapeHtml(entry.word || word)}</h2>
+            ${categoryBadgeHtml(category)}
           </div>
           <div class="result-actions">
             <button class="icon-btn" id="speakBtn" type="button" aria-label="Pronounce ${escapeHtml(word)}">
@@ -326,43 +619,14 @@
       </article>
     `;
 
-    $('#speakBtn').addEventListener('click', () => speakWord(entry.word || word, $('#speakBtn')));
-    $('#favBtn').addEventListener('click', () => toggleFavorite(word, entry));
+    const speakResultBtn = $('#speakBtn');
+    const favBtnEl = $('#favBtn');
+    if (speakResultBtn) speakResultBtn.addEventListener('click', () => speakWord(entry.word || word, speakResultBtn));
+    if (favBtnEl) favBtnEl.addEventListener('click', () => toggleFavorite(word, entry));
 
     resultArea.querySelectorAll('.tag[data-word]').forEach((tag) => {
       tag.addEventListener('click', () => runSearch(tag.dataset.word));
     });
-  }
-
-  /* ---------------- SEARCH FLOW ---------------- */
-  let searchToken = 0;
-  async function runSearch(rawWord) {
-    const word = (rawWord || '').trim();
-    if (!word) return;
-
-    searchInput.value = word;
-    const myToken = ++searchToken;
-    renderLoading(word);
-
-    incrementSearchCount();
-    addToHistory(word);
-
-    try {
-      const data = await fetchDefinition(word);
-      if (myToken !== searchToken) return;
-      renderResult(word, data);
-    } catch (err) {
-      if (myToken !== searchToken) return;
-      if (err && err.notFound) {
-        renderNotFound(word);
-      } else if (OFFLINE_WORDS[word.toLowerCase()]) {
-        renderResult(word, [offlineToApiShape(word.toLowerCase())]);
-      } else {
-        renderApiError(word);
-      }
-    }
-    renderStats();
-    window.scrollTo({ top: document.getElementById('dictionary').offsetTop - 90, behavior: 'smooth' });
   }
 
   function offlineToApiShape(word) {
@@ -379,6 +643,81 @@
     };
   }
 
+  function adultToApiShape(word) {
+    const o = ADULT_WORDS[word.toLowerCase()];
+    return {
+      word,
+      phonetic: '',
+      meanings: [{
+        partOfSpeech: o.pos,
+        definitions: [{ definition: o.meaning, example: o.example }],
+        synonyms: o.synonyms || [],
+        antonyms: o.antonyms || []
+      }]
+    };
+  }
+
+  function placeToApiShape(word) {
+    const o = PLACES[word.toLowerCase()];
+    return {
+      word,
+      phonetic: '',
+      meanings: [{
+        partOfSpeech: 'proper noun',
+        definitions: [{ definition: o.meaning }],
+        synonyms: [],
+        antonyms: []
+      }]
+    };
+  }
+
+  /* ---------------- SEARCH FLOW ---------------- */
+  let searchToken = 0;
+  async function runSearch(rawWord) {
+    const word = normalizeQuery(rawWord);
+    if (!word) return;
+
+    const lower = word.toLowerCase();
+    searchInput.value = word;
+    hideAutocomplete();
+
+    // Central age gate: every route into a result (search box, suggestions,
+    // A–Z browsing, category tags, synonym/antonym chips, favorites, history)
+    // funnels through this single function, so there is no route that bypasses it.
+    if (isAdultWord(lower) && !isAdultSessionConfirmed()) {
+      showAgeGate(word);
+      return;
+    }
+
+    const myToken = ++searchToken;
+    renderLoading(word);
+
+    incrementSearchCount();
+    addToHistory(word);
+
+    try {
+      const data = await fetchDefinition(word);
+      if (myToken !== searchToken) return;
+      const category = isAdultWord(lower) ? (ADULT_WORDS[lower].category || 'Mature Content') : 'Live Dictionary';
+      renderResult(word, data, category);
+    } catch (err) {
+      if (myToken !== searchToken) return;
+      if (isAdultWord(lower)) {
+        renderResult(word, [adultToApiShape(word)], ADULT_WORDS[lower].category || 'Mature Content');
+      } else if (OFFLINE_WORDS[lower]) {
+        renderResult(word, [offlineToApiShape(lower)], 'Curated (Offline)');
+      } else if (PLACES[lower]) {
+        renderResult(word, [placeToApiShape(word)], PLACES[lower].type || 'Place');
+      } else if (err && err.notFound) {
+        await renderNotFound(word);
+      } else {
+        renderApiError(word);
+      }
+    }
+    renderStats();
+    window.scrollTo({ top: document.getElementById('dictionary').offsetTop - 90, behavior: 'smooth' });
+  }
+
   searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     runSearch(searchInput.value);
@@ -386,6 +725,63 @@
 
   document.querySelectorAll('.chip[data-word]').forEach((chip) => {
     chip.addEventListener('click', () => runSearch(chip.dataset.word));
+  });
+
+  /* ---------------- AUTOCOMPLETE / SUGGESTIONS ---------------- */
+  let autocompleteToken = 0;
+  let debounceTimer = null;
+
+  function hideAutocomplete() {
+    if (!autocompleteEl) return;
+    autocompleteEl.hidden = true;
+    autocompleteEl.innerHTML = '';
+  }
+
+  async function updateAutocomplete(raw) {
+    const q = normalizeQuery(raw).toLowerCase();
+    if (!autocompleteEl) return;
+    if (!q || q.length < 2) { hideAutocomplete(); return; }
+
+    const myToken = ++autocompleteToken;
+    const first = q[0];
+    let pool = [];
+    if (ALPHABET.includes(first)) {
+      pool = await loadLetter(first);
+    }
+    if (myToken !== autocompleteToken) return;
+
+    const fromIndex = pool.filter(w => w.startsWith(q));
+    const fromPlaces = Object.keys(PLACES).filter(w => w.startsWith(q));
+    const fromAdult = Object.keys(ADULT_WORDS).filter(w => w.startsWith(q));
+    const merged = Array.from(new Set([...fromIndex, ...fromPlaces, ...fromAdult])).slice(0, 8);
+
+    if (!merged.length) { hideAutocomplete(); return; }
+
+    autocompleteEl.innerHTML = merged.map(w => {
+      const adult = isAdultWord(w);
+      return `<button type="button" class="autocomplete-item" data-word="${escapeHtml(w)}">
+        <span>${escapeHtml(w)}</span>${adult ? '<span class="adult-badge">18+</span>' : ''}
+      </button>`;
+    }).join('');
+    autocompleteEl.hidden = false;
+
+    autocompleteEl.querySelectorAll('.autocomplete-item').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        runSearch(btn.dataset.word);
+      });
+    });
+  }
+
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => updateAutocomplete(searchInput.value), 150);
+  });
+  searchInput.addEventListener('blur', () => {
+    setTimeout(hideAutocomplete, 120);
+  });
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim().length >= 2) updateAutocomplete(searchInput.value);
   });
 
   /* ---------------- FAVORITES ---------------- */
@@ -593,7 +989,10 @@
   }
 
   /* ---------------- INIT ---------------- */
-  function init() {
+  let initialized = false;
+  async function init() {
+    if (initialized) return;
+    initialized = true;
     initTheme();
     renderCategories();
     renderFavorites();
@@ -601,6 +1000,10 @@
     renderStats();
     renderWordOfDay();
     initScrollSpy();
+    renderAzLetters();
+    await loadCoreData();
+    updateAvailableStat();
+    if (azLetterRow) openAzLetter('a');
   }
 
   document.addEventListener('DOMContentLoaded', init);
