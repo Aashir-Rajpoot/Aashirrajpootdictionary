@@ -1,0 +1,33 @@
+{
+  "counts": {
+    "a": 2200,
+    "b": 2200,
+    "c": 2200,
+    "d": 2200,
+    "e": 2200,
+    "f": 2200,
+    "g": 1839,
+    "h": 2120,
+    "i": 2200,
+    "j": 624,
+    "k": 602,
+    "l": 1884,
+    "m": 2200,
+    "n": 1124,
+    "o": 1335,
+    "p": 2200,
+    "q": 266,
+    "r": 2200,
+    "s": 2200,
+    "t": 2200,
+    "u": 1223,
+    "v": 872,
+    "w": 1508,
+    "x": 50,
+    "y": 204,
+    "z": 137
+  },
+  "total": 40188,
+  "source": "wordfreq (en) frequency corpus, cross-validated against the wamerican system dictionary",
+  "generated": "2026-09-03"
+}
