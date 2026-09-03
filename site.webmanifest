@@ -1,0 +1,14 @@
+{
+  "name": "Aashir Dictionary",
+  "short_name": "Aashir Dictionary",
+  "description": "Search 40,000+ English words with meanings, pronunciations, examples and Roman Urdu translations.",
+  "start_url": "/Aashirrajpootdictionary/index.html",
+  "scope": "/Aashirrajpootdictionary/",
+  "display": "standalone",
+  "background_color": "#080b15",
+  "theme_color": "#080b15",
+  "icons": [
+    { "src": "favicon-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "favicon-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
