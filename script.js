@@ -609,10 +609,11 @@
     return `<span class="source-badge">${escapeHtml(category)}</span>`;
   }
 
-  function renderResult(word, apiData, category) {
+  function renderResult(word, apiData, category, media) {
     const entry = apiData[0];
     const phonetic = entry.phonetic || ((entry.phonetics || []).find(p => p.text) || {}).text || '';
     const isFav = isFavorite(word);
+    const firstDefText = ((entry.meanings || [])[0] || {}).definitions && (entry.meanings[0].definitions[0] || {}).definition;
 
     const meaningsHtml = (entry.meanings || []).map((meaning) => {
       const defsHtml = (meaning.definitions || []).slice(0, 4).map((d, i) => `
@@ -655,6 +656,25 @@
       <p class="origin-block">${escapeHtml(entry.origin)}</p>
     ` : '';
 
+    const imageHtml = (media && media.image) ? `
+      <div class="word-image-block">
+        <img class="word-image" src="${escapeHtml(media.image)}" alt="${escapeHtml(media.title || word)}" loading="lazy">
+        ${media.link ? `<a class="image-caption" href="${escapeHtml(media.link)}" target="_blank" rel="noopener noreferrer">More about "${escapeHtml(media.title || word)}" on Wikipedia →</a>` : `<span class="image-caption">Image: Wikipedia</span>`}
+      </div>
+    ` : (media && media.link ? `
+      <div class="word-image-block word-image-block--linkonly">
+        <a class="image-caption" href="${escapeHtml(media.link)}" target="_blank" rel="noopener noreferrer">Read more about "${escapeHtml(media.title || word)}" on Wikipedia →</a>
+      </div>
+    ` : '');
+
+    const urduHtml = `
+      <div class="urdu-block" lang="ur" dir="rtl">
+        <p class="word-section-title" dir="ltr">اردو / Urdu</p>
+        <p class="urdu-word" id="urduWordText">لوڈ ہو رہا ہے…</p>
+        <p class="urdu-def" id="urduDefText">ترجمہ لوڈ ہو رہا ہے…</p>
+      </div>
+    `;
+
     resultArea.innerHTML = `
       <article class="result-card">
         <div class="result-top">
@@ -674,8 +694,10 @@
         <div class="result-meta-row">
           ${phonetic ? `<span class="phonetic">${escapeHtml(phonetic)}</span>` : ''}
         </div>
+        ${imageHtml}
         ${meaningsHtml}
         ${origin}
+        ${urduHtml}
       </article>
     `;
 
@@ -687,6 +709,8 @@
     resultArea.querySelectorAll('.tag[data-word]').forEach((tag) => {
       tag.addEventListener('click', () => runSearch(tag.dataset.word));
     });
+
+    attachUrduTranslation(entry.word || word, firstDefText, searchToken);
   }
 
   function offlineToApiShape(word) {
@@ -731,7 +755,62 @@
     };
   }
 
-  /* ---------------- SEARCH FLOW ---------------- */
+  /* ---------------- IMAGE LOOKUP (Wikipedia, real photos — not AI-generated) ----------------
+     Uses Wikipedia's public REST summary endpoint (no key, CORS-enabled) to find a
+     real thumbnail photo and a "learn more" link for the searched word, when one exists. */
+  async function fetchWikipediaMedia(word) {
+    try {
+      const res = await fetchWithTimeout(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.trim())}`, 3500);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data.type === 'disambiguation') return null; // ambiguous term — avoid showing a possibly wrong image
+      const image = data.thumbnail && data.thumbnail.source;
+      const link = data.content_urls && data.content_urls.desktop && data.content_urls.desktop.page;
+      if (!image && !link) return null;
+      return { image, link, title: data.title || word };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ---------------- URDU TRANSLATION (MyMemory, real machine translation — not fabricated) ----------------
+     Free, no-key, CORS-enabled translation service. Used to translate the word itself
+     and its first definition into Urdu, alongside the English result. */
+  async function translateToUrdu(text) {
+    const res = await fetchWithTimeout(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ur`, 4000);
+    if (!res.ok) throw new Error('translate-error');
+    const data = await res.json();
+    const translated = data && data.responseData && data.responseData.translatedText;
+    if (!translated || /^\s*$/.test(translated)) throw new Error('no-translation');
+    return translated;
+  }
+
+  let urduToken = 0;
+  async function attachUrduTranslation(word, defText, myToken) {
+    const localToken = ++urduToken;
+    const wordEl = document.getElementById('urduWordText');
+    const defEl = document.getElementById('urduDefText');
+    if (!wordEl && !defEl) return;
+
+    const [wordResult, defResult] = await Promise.allSettled([
+      translateToUrdu(word),
+      defText ? translateToUrdu(defText) : Promise.reject(new Error('no-def'))
+    ]);
+
+    if (myToken !== searchToken || localToken !== urduToken) return; // stale — a newer search/translation happened
+    const freshWordEl = document.getElementById('urduWordText');
+    const freshDefEl = document.getElementById('urduDefText');
+    if (freshWordEl) {
+      freshWordEl.textContent = wordResult.status === 'fulfilled' ? wordResult.value : word;
+    }
+    if (freshDefEl) {
+      freshDefEl.textContent = defResult.status === 'fulfilled'
+        ? defResult.value
+        : 'اردو ترجمہ دستیاب نہیں۔';
+    }
+  }
+
+
   let searchToken = 0;
   async function runSearch(rawWord) {
     const word = normalizeQuery(rawWord);
@@ -755,19 +834,25 @@
     incrementSearchCount();
     addToHistory(word);
 
+    // Fetched in parallel with the definition — a real Wikipedia photo/link when one exists.
+    // Skipped for age-gated adult terms to keep that flow strictly text-only and professional.
+    const mediaPromise = isAdultWord(lower) ? Promise.resolve(null) : fetchWikipediaMedia(word);
+
     try {
-      const { data, source } = await fetchDefinitionWithFallback(word);
+      const [{ data, source }, media] = await Promise.all([fetchDefinitionWithFallback(word), mediaPromise]);
       if (myToken !== searchToken) return;
       const category = isAdultWord(lower) ? (ADULT_WORDS[lower].category || 'Mature Content') : source;
-      renderResult(word, data, category);
+      renderResult(word, data, category, media);
     } catch (err) {
       if (myToken !== searchToken) return;
+      const media = await mediaPromise.catch(() => null);
+      if (myToken !== searchToken) return;
       if (isAdultWord(lower)) {
-        renderResult(word, [adultToApiShape(word)], ADULT_WORDS[lower].category || 'Mature Content');
+        renderResult(word, [adultToApiShape(word)], ADULT_WORDS[lower].category || 'Mature Content', null);
       } else if (OFFLINE_WORDS[lower]) {
-        renderResult(word, [offlineToApiShape(lower)], 'Curated (Offline)');
+        renderResult(word, [offlineToApiShape(lower)], 'Curated (Offline)', media);
       } else if (PLACES[lower]) {
-        renderResult(word, [placeToApiShape(word)], PLACES[lower].type || 'Place');
+        renderResult(word, [placeToApiShape(word)], PLACES[lower].type || 'Place', media);
       } else if (err && err.notFound) {
         await renderNotFound(word);
       } else {
