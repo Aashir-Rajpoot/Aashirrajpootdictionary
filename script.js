@@ -354,39 +354,43 @@
     return w;
   }
 
-  /* ---------------- API FETCH (with one retry on transient failure) ---------------- */
-  async function fetchDefinition(word, attempt) {
-    attempt = attempt || 0;
-    try {
-      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`);
-      if (!res.ok) {
-        if (res.status === 404) {
-          const err = new Error('not-found');
-          err.notFound = true;
-          throw err;
-        }
-        throw new Error('api-error');
-      }
-      return await res.json();
-    } catch (err) {
-      if (err && err.notFound) throw err;
-      if (attempt < 1) {
-        await new Promise(r => setTimeout(r, 400));
-        return fetchDefinition(word, attempt + 1);
-      }
-      throw err;
-    }
+  /* ---------------- LIVE DEFINITION SOURCES ----------------
+     Two independent, no-key, CORS-friendly dictionary sources are queried
+     IN PARALLEL (not one-after-the-other) so a slow/unreachable source never
+     delays the result if the other one answers. Each call is capped with a
+     timeout so a hung connection can't stall the search. dictionaryapi.dev's
+     result is preferred when both succeed, since it includes richer data
+     (examples, synonyms, origin); Datamuse (WordNet-backed) fills in when
+     dictionaryapi.dev is down — which it has been unreliable recently. */
+  function fetchWithTimeout(url, ms) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
   }
 
-  /* ---------------- SECONDARY LIVE SOURCE (Datamuse) ----------------
-     Used only when the primary dictionaryapi.dev source fails or times out
-     (that free service has occasional outages). Datamuse is a separate,
-     independently-hosted, no-key, CORS-friendly API backed by WordNet —
-     real definitions, not fabricated. */
+  async function fetchDefinition(word) {
+    const res = await fetchWithTimeout(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`,
+      3000
+    );
+    if (!res.ok) {
+      if (res.status === 404) {
+        const err = new Error('not-found');
+        err.notFound = true;
+        throw err;
+      }
+      throw new Error('api-error');
+    }
+    return await res.json();
+  }
+
   const POS_MAP = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', u: 'other' };
 
   async function fetchFromDatamuse(word) {
-    const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word.trim().toLowerCase())}&md=d&max=1`);
+    const res = await fetchWithTimeout(
+      `https://api.datamuse.com/words?sp=${encodeURIComponent(word.trim().toLowerCase())}&md=d&max=1`,
+      3000
+    );
     if (!res.ok) throw new Error('datamuse-error');
     const data = await res.json();
     const entry = data && data[0];
@@ -415,22 +419,22 @@
     }];
   }
 
-  // Tries the primary source, then the secondary source, before giving up.
+  // Races both sources; returns the richer one if both succeed, otherwise
+  // whichever succeeded. Total wait is capped by the timeout above, not by
+  // adding the two sources' wait times together.
   async function fetchDefinitionWithFallback(word) {
-    try {
-      return { data: await fetchDefinition(word), source: 'Live Dictionary' };
-    } catch (primaryErr) {
-      try {
-        return { data: await fetchFromDatamuse(word), source: 'Live Dictionary (backup source)' };
-      } catch (secondaryErr) {
-        // Prefer surfacing "not found" only if BOTH sources agree the word doesn't exist;
-        // otherwise treat it as a service problem so offline/places fallback still gets tried.
-        if (primaryErr && primaryErr.notFound && secondaryErr && secondaryErr.notFound) {
-          throw primaryErr;
-        }
-        throw (primaryErr && !primaryErr.notFound) ? primaryErr : secondaryErr;
-      }
-    }
+    const [primary, secondary] = await Promise.all([
+      fetchDefinition(word).then(data => ({ data, source: 'Live Dictionary' })).catch(error => ({ error })),
+      fetchFromDatamuse(word).then(data => ({ data, source: 'Live Dictionary (backup source)' })).catch(error => ({ error }))
+    ]);
+
+    if (primary.data) return primary;
+    if (secondary.data) return secondary;
+
+    const primaryErr = primary.error;
+    const secondaryErr = secondary.error;
+    if (primaryErr && primaryErr.notFound && secondaryErr && secondaryErr.notFound) throw primaryErr;
+    throw (primaryErr && !primaryErr.notFound) ? primaryErr : secondaryErr;
   }
 
 
